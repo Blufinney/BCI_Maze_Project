@@ -2,98 +2,94 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
-    private WaypointManager waypointManager;
-    private Transform[] currentTrackWaypoints;
+    public JunctionManager junctionManager;
+    public float rotationSpeed = 5f;
+    public float speed = 5f;
+    public float junctionDetectionRadius = 3f;
+
+    private Transform[] currentTrack;
     private int currentWaypointIndex = 0;
     private bool isMoving = false;
+    private Transform detectedJunction = null;
 
-    public float moveSpeed = 5f;
-    public float rotationSpeed = 10f;
-
-    void Start()
+    private void Start()
     {
-        // Get the WaypointManager component from the WaypointManager GameObject
-        waypointManager = GameObject.Find("WaypointManager").GetComponent<WaypointManager>();
+        // Start with the first track at the initial junction
+        currentTrack = junctionManager.junctions[0].tracks[0].waypoints;
     }
 
-    void Update()
+    private void Update()
     {
         if (isMoving)
         {
-            MoveAlongTrack();
+            MoveToNextWaypoint();
         }
         else
         {
-            CheckInputForTrackSelection();
+            int input = GetInput();
+            if (input > 0 && input <= 4)
+            {
+                if (detectedJunction != null)
+                {
+                    int trackIndex = input - 1;
+                    if (trackIndex < detectedJunction.GetComponent<CustomJunction>().tracks.Length)
+                    {
+                        currentTrack = detectedJunction.GetComponent<CustomJunction>().tracks[trackIndex].waypoints;
+                        currentWaypointIndex = 0; // Reset waypoint index
+                        isMoving = true;
+                    }
+                }
+            }
         }
+        UpdateDetectedJunction();
     }
 
-    void MoveAlongTrack()
+    private void MoveToNextWaypoint()
     {
-        // Check if there are waypoints to follow
-        if (currentTrackWaypoints == null || currentWaypointIndex >= currentTrackWaypoints.Length)
+        if (currentWaypointIndex < currentTrack.Length)
         {
-            isMoving = false;
-            Debug.Log("End of track reached.");
-            return;
-        }
+            Transform targetWaypoint = currentTrack[currentWaypointIndex];
+            transform.position = Vector3.MoveTowards(transform.position, targetWaypoint.position, speed * Time.deltaTime);
 
-        // Move towards the current waypoint
-        Vector3 targetPosition = currentTrackWaypoints[currentWaypointIndex].position;
-        transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
+            Vector3 direction = (targetWaypoint.position - transform.position).normalized;
+            Quaternion lookRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
 
-        // Rotate towards the current waypoint
-        Vector3 targetDirection = (targetPosition - transform.position).normalized;
-        Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-
-        // Check if reached the current waypoint
-        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
-        {
-            // Move to the next waypoint
-            currentWaypointIndex++;
-
-            // Look towards the next waypoint
-            if (currentWaypointIndex < currentTrackWaypoints.Length)
+            if (Vector3.Distance(transform.position, targetWaypoint.position) < 0.1f)
             {
-                Vector3 nextWaypointDirection = (currentTrackWaypoints[currentWaypointIndex].position - transform.position).normalized;
-                Quaternion nextWaypointRotation = Quaternion.LookRotation(nextWaypointDirection);
-                transform.rotation = Quaternion.Lerp(transform.rotation, nextWaypointRotation, rotationSpeed * Time.deltaTime);
+                currentWaypointIndex++;
+                if (currentWaypointIndex >= currentTrack.Length)
+                {
+                    isMoving = false; // Stop moving when reaching the last waypoint
+                }
             }
         }
     }
 
-    void CheckInputForTrackSelection()
+    private void UpdateDetectedJunction()
     {
-        // Check for input to select a track
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        foreach (var junction in junctionManager.junctions)
         {
-            SelectTrack(waypointManager.track1Waypoints);
+            if (Vector3.Distance(transform.position, junction.coordinates) <= junctionDetectionRadius)
+            {
+                detectedJunction = junction.transform;
+                Debug.Log("Player is at junction: " + junction.name);
+                return;
+            }
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            SelectTrack(waypointManager.track2Waypoints);
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            SelectTrack(waypointManager.track3Waypoints);
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            SelectTrack(waypointManager.track4Waypoints);
-        }
+        detectedJunction = null;
     }
 
-    void SelectTrack(Transform[] trackWaypoints)
+    private int GetInput()
     {
-        currentTrackWaypoints = trackWaypoints;
-        currentWaypointIndex = 0;
-        isMoving = true;
-        Debug.Log("Started track.");
+        if (Input.GetKeyDown(KeyCode.Alpha1)) return 1;
+        if (Input.GetKeyDown(KeyCode.Alpha2)) return 2;
+        if (Input.GetKeyDown(KeyCode.Alpha3)) return 3;
+        if (Input.GetKeyDown(KeyCode.Alpha4)) return 4;
+        return 0;
     }
 }
-
 
 
