@@ -7,6 +7,7 @@ public class PlayerCamera : MonoBehaviour
     public Transform target; // Reference to the player GameObject
 
     public Vector3 offset; // Offset between the camera and the player
+    
 
     void LateUpdate()
     {

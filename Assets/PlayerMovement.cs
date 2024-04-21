@@ -14,6 +14,8 @@ public class PlayerMovement : MonoBehaviour
     private bool isMoving = false;
     private Transform detectedJunction = null;
 
+ 
+
     private void Start()
     {
         // Start with the first track at the initial junction
@@ -22,6 +24,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+
         if (isMoving)
         {
             MoveToNextWaypoint();

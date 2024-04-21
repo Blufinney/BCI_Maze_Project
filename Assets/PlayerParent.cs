@@ -6,6 +6,9 @@ public class CameraFollowPlayer : MonoBehaviour
 {
     public Transform playerTransform;
 
+    [Range(30f, 120f)] // Define the range of acceptable FOV values
+    public float fieldOfView = 30f; // Field of View variable
+
     void Start()
     {
         // Check if playerTransform is assigned
@@ -16,6 +19,9 @@ public class CameraFollowPlayer : MonoBehaviour
         }
         else
         {
+            // Set the camera's field of view
+            GetComponent<Camera>().fieldOfView = fieldOfView;
+
             // Parent the camera to the player GameObject
             transform.SetParent(playerTransform);
             // Reset local position and rotation to zero

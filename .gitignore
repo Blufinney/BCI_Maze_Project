@@ -70,3 +70,10 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+
+# Asset files too big :(
+/Assets/Asset/BackroomsLikeAsset/BlendFile/BackRoomsLike_Preview_001.zip
+/Assets/Asset/BackroomsLikeAsset/BlendFile/Props_only.zip
+Assets/Asset/BackroomsLikeAsset/BlendFile/BackRoomsLike_Preview_001.zip
+Assets/Asset/BackroomsLikeAsset/BlendFile/Props_only.zip
