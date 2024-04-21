@@ -75,6 +75,8 @@ public class PlayerMovement : MonoBehaviour
     {
         foreach (var junction in junctionManager.junctions)
         {
+            // Debug.Log("Player is at: " + junction.coordinates);
+            
             if (Vector3.Distance(transform.position, junction.coordinates) <= junctionDetectionRadius)
             {
                 detectedJunction = junction.transform;
